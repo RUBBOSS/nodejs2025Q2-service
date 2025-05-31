@@ -57,7 +57,6 @@ export class AlbumService {
       throw new NotFoundException('Album not found');
     }
 
-    // Update only provided fields
     if (updateAlbumDto.name !== undefined) {
       album.name = updateAlbumDto.name;
     }
@@ -84,7 +83,6 @@ export class AlbumService {
     this.albums.splice(index, 1);
   }
 
-  // Method to update albums when artist is deleted
   updateAlbumsOnArtistDelete(artistId: string): void {
     this.albums.forEach((album) => {
       if (album.artistId === artistId) {
