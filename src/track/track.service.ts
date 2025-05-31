@@ -58,7 +58,6 @@ export class TrackService {
       throw new NotFoundException('Track not found');
     }
 
-    // Update only provided fields
     if (updateTrackDto.name !== undefined) {
       track.name = updateTrackDto.name;
     }
@@ -88,7 +87,6 @@ export class TrackService {
     this.tracks.splice(index, 1);
   }
 
-  // Method to update tracks when artist is deleted
   updateTracksOnArtistDelete(artistId: string): void {
     this.tracks.forEach((track) => {
       if (track.artistId === artistId) {
@@ -97,7 +95,6 @@ export class TrackService {
     });
   }
 
-  // Method to update tracks when album is deleted
   updateTracksOnAlbumDelete(albumId: string): void {
     this.tracks.forEach((track) => {
       if (track.albumId === albumId) {
