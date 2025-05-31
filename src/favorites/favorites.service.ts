@@ -8,6 +8,7 @@ import { Favorites, FavoritesResponse } from '../types';
 import { ArtistService } from '../artist/artist.service';
 import { AlbumService } from '../album/album.service';
 import { TrackService } from '../track/track.service';
+import { CleanupService } from '../shared/cleanup.service';
 
 @Injectable()
 export class FavoritesService {
@@ -21,7 +22,19 @@ export class FavoritesService {
     private readonly artistService: ArtistService,
     private readonly albumService: AlbumService,
     private readonly trackService: TrackService,
-  ) {}
+    private readonly cleanupService: CleanupService,
+  ) {
+    // Register cleanup callbacks
+    this.cleanupService.registerCleanupCallback('artist', (id: string) =>
+      this.removeArtistFromFavorites(id),
+    );
+    this.cleanupService.registerCleanupCallback('album', (id: string) =>
+      this.removeAlbumFromFavorites(id),
+    );
+    this.cleanupService.registerCleanupCallback('track', (id: string) =>
+      this.removeTrackFromFavorites(id),
+    );
+  }
 
   private isValidUUID(id: string): boolean {
     const uuidRegex =
@@ -98,7 +111,6 @@ export class FavoritesService {
       throw new BadRequestException('Invalid album ID');
     }
 
-    // Check if album exists
     try {
       this.albumService.findOne(id);
     } catch {
@@ -128,7 +140,6 @@ export class FavoritesService {
       throw new BadRequestException('Invalid track ID');
     }
 
-    // Check if track exists
     try {
       this.trackService.findOne(id);
     } catch {

@@ -7,10 +7,17 @@ import { Album } from '../types';
 import { CreateAlbumDto } from '../dto/create-album.dto';
 import { UpdateAlbumDto } from '../dto/update-album.dto';
 import { randomUUID } from 'crypto';
+import { CleanupService } from '../shared/cleanup.service';
 
 @Injectable()
 export class AlbumService {
   private albums: Album[] = [];
+
+  constructor(private readonly cleanupService: CleanupService) {
+    this.cleanupService.registerCleanupCallback('artist', (id: string) =>
+      this.updateAlbumsOnArtistDelete(id),
+    );
+  }
 
   private isValidUUID(id: string): boolean {
     const uuidRegex =
@@ -81,6 +88,8 @@ export class AlbumService {
     }
 
     this.albums.splice(index, 1);
+
+    this.cleanupService.performCleanup('album', id);
   }
 
   updateAlbumsOnArtistDelete(artistId: string): void {
