@@ -14,11 +14,9 @@ export class TrackService {
   private tracks: Track[] = [];
 
   constructor(private readonly cleanupService: CleanupService) {
-    // Register cleanup callback for when artists are deleted
     this.cleanupService.registerCleanupCallback('artist', (id: string) =>
       this.updateTracksOnArtistDelete(id),
     );
-    // Register cleanup callback for when albums are deleted
     this.cleanupService.registerCleanupCallback('album', (id: string) =>
       this.updateTracksOnAlbumDelete(id),
     );
@@ -98,7 +96,6 @@ export class TrackService {
 
     this.tracks.splice(index, 1);
 
-    // Perform cleanup: remove from favorites
     this.cleanupService.performCleanup('track', id);
   }
 

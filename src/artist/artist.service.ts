@@ -7,10 +7,13 @@ import { Artist } from '../types';
 import { CreateArtistDto } from '../dto/create-artist.dto';
 import { UpdateArtistDto } from '../dto/update-artist.dto';
 import { randomUUID } from 'crypto';
+import { CleanupService } from '../shared/cleanup.service';
 
 @Injectable()
 export class ArtistService {
   private artists: Artist[] = [];
+
+  constructor(private readonly cleanupService: CleanupService) {}
 
   private isValidUUID(id: string): boolean {
     const uuidRegex =
@@ -77,6 +80,7 @@ export class ArtistService {
     }
 
     this.artists.splice(index, 1);
+    this.cleanupService.performCleanup('artist', id);
   }
 
   exists(id: string): boolean {

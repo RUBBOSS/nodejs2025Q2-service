@@ -81,7 +81,6 @@ export class FavoritesService {
       throw new BadRequestException('Invalid artist ID');
     }
 
-    // Check if artist exists
     try {
       this.artistService.findOne(id);
     } catch {
@@ -164,7 +163,6 @@ export class FavoritesService {
     this.favorites.tracks.splice(index, 1);
   }
 
-  // Methods to clean up favorites when entities are deleted
   removeArtistFromFavorites(artistId: string): void {
     const index = this.favorites.artists.indexOf(artistId);
     if (index !== -1) {
