@@ -3,17 +3,20 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { Artist } from '../types';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Artist } from '../entities/artist.entity';
 import { CreateArtistDto } from '../dto/create-artist.dto';
 import { UpdateArtistDto } from '../dto/update-artist.dto';
-import { randomUUID } from 'crypto';
 import { CleanupService } from '../shared/cleanup.service';
 
 @Injectable()
 export class ArtistService {
-  private artists: Artist[] = [];
-
-  constructor(private readonly cleanupService: CleanupService) {}
+  constructor(
+    @InjectRepository(Artist)
+    private artistRepository: Repository<Artist>,
+    private readonly cleanupService: CleanupService,
+  ) {}
 
   private isValidUUID(id: string): boolean {
     const uuidRegex =
@@ -21,16 +24,16 @@ export class ArtistService {
     return uuidRegex.test(id);
   }
 
-  findAll(): Artist[] {
-    return this.artists;
+  async findAll(): Promise<Artist[]> {
+    return await this.artistRepository.find();
   }
 
-  findOne(id: string): Artist {
+  async findOne(id: string): Promise<Artist> {
     if (!this.isValidUUID(id)) {
       throw new BadRequestException('Invalid artist ID');
     }
 
-    const artist = this.artists.find((artist) => artist.id === id);
+    const artist = await this.artistRepository.findOne({ where: { id } });
     if (!artist) {
       throw new NotFoundException('Artist not found');
     }
@@ -38,23 +41,21 @@ export class ArtistService {
     return artist;
   }
 
-  create(createArtistDto: CreateArtistDto): Artist {
-    const newArtist: Artist = {
-      id: randomUUID(),
+  async create(createArtistDto: CreateArtistDto): Promise<Artist> {
+    const newArtist = this.artistRepository.create({
       name: createArtistDto.name,
       grammy: createArtistDto.grammy,
-    };
+    });
 
-    this.artists.push(newArtist);
-    return newArtist;
+    return await this.artistRepository.save(newArtist);
   }
 
-  update(id: string, updateArtistDto: UpdateArtistDto): Artist {
+  async update(id: string, updateArtistDto: UpdateArtistDto): Promise<Artist> {
     if (!this.isValidUUID(id)) {
       throw new BadRequestException('Invalid artist ID');
     }
 
-    const artist = this.artists.find((artist) => artist.id === id);
+    const artist = await this.artistRepository.findOne({ where: { id } });
     if (!artist) {
       throw new NotFoundException('Artist not found');
     }
@@ -66,24 +67,24 @@ export class ArtistService {
       artist.grammy = updateArtistDto.grammy;
     }
 
-    return artist;
+    return await this.artistRepository.save(artist);
   }
 
-  remove(id: string): void {
+  async remove(id: string): Promise<void> {
     if (!this.isValidUUID(id)) {
       throw new BadRequestException('Invalid artist ID');
     }
 
-    const index = this.artists.findIndex((artist) => artist.id === id);
-    if (index === -1) {
+    const result = await this.artistRepository.delete(id);
+    if (result.affected === 0) {
       throw new NotFoundException('Artist not found');
     }
 
-    this.artists.splice(index, 1);
     this.cleanupService.performCleanup('artist', id);
   }
 
-  exists(id: string): boolean {
-    return this.artists.some((artist) => artist.id === id);
+  async exists(id: string): Promise<boolean> {
+    const count = await this.artistRepository.count({ where: { id } });
+    return count > 0;
   }
 }
