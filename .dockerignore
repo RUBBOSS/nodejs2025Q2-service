@@ -3,23 +3,25 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+package-lock.json
+yarn.lock
 
 # Build outputs
 dist/
 build/
+*.tsbuildinfo
 
 # Environment files
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
 
 # IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
+*.sublime-*
 
 # OS generated files
 .DS_Store
@@ -29,18 +31,30 @@ build/
 .Trashes
 ehthumbs.db
 Thumbs.db
+desktop.ini
 
 # Git
 .git/
 .gitignore
+.gitattributes
 
 # Testing
 coverage/
 .nyc_output
+test-results/
+playwright-report/
+*.spec.ts
+*.test.ts
+test/
+jest.config.*
 
 # Logs
 logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
 
 # Runtime data
 pids/
@@ -55,8 +69,35 @@ docker-compose*
 
 # Documentation
 README.md
+README*.md
 docs/
+doc/
+*.md
+!package.json
 
 # Temporary files
 tmp/
 temp/
+.cache/
+
+# TypeScript
+*.tsbuildinfo
+tsconfig*.json
+!tsconfig.json
+
+# NestJS specific
+nest-cli.json
+
+# Database
+database/scripts/
+# Remove *.sql exclusion since we might need migration files
+# *.sql
+
+# Backup files
+*.backup
+*.bak
+*.orig
+
+# Editor directories and files
+.history/
+*.tmp
