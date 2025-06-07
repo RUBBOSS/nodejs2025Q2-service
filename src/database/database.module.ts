@@ -12,11 +12,11 @@ import { User, Artist, Album, Track, Favorites } from '../entities';
         host: configService.get('POSTGRES_HOST', 'localhost'),
         port: parseInt(configService.get('POSTGRES_PORT', '5432')),
         username: configService.get('POSTGRES_USER', 'postgres'),
-        password: configService.get('POSTGRES_PASSWORD', 'postgres'),
+        password: configService.get('POSTGRES_PASSWORD', 'rub54321'),
         database: configService.get('POSTGRES_DB', 'home_library'),
         entities: [User, Artist, Album, Track, Favorites],
         synchronize: true, // Only for development
-        logging: false,
+        logging: ['query', 'error'],
       }),
       inject: [ConfigService],
     }),

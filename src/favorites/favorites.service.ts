@@ -18,7 +18,7 @@ import { CleanupService } from '../shared/cleanup.service';
 
 @Injectable()
 export class FavoritesService {
-  private readonly GLOBAL_FAVORITES_ID = 'global-favorites';
+  private readonly GLOBAL_FAVORITES_ID = '00000000-0000-4000-8000-000000000000';
 
   constructor(
     @InjectRepository(Favorites)
