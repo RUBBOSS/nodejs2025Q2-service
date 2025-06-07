@@ -1,6 +1,7 @@
 version: '3.8'
 
-services:  # PostgreSQL Database
+services:
+  # PostgreSQL Database
   postgres:
     build:
       context: .
@@ -25,7 +26,6 @@ services:  # PostgreSQL Database
       interval: 30s
       timeout: 10s
       retries: 5
-
   # NestJS Application
   app:
     build:
@@ -42,6 +42,10 @@ services:  # PostgreSQL Database
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-nodejs2025q2}
+      # Additional application configurations
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-3600}
+      BCRYPT_SALT_ROUNDS: ${BCRYPT_SALT_ROUNDS:-10}
     ports:
       - "${PORT:-4000}:4000"
     depends_on:
@@ -51,6 +55,12 @@ services:  # PostgreSQL Database
       - home-library-network
     volumes:
       - app_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 # Named volumes for data persistence
 volumes:

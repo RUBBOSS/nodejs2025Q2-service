@@ -3,7 +3,6 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-package-lock.json
 yarn.lock
 
 # Build outputs
@@ -86,7 +85,7 @@ tsconfig*.json
 !tsconfig.json
 
 # NestJS specific
-nest-cli.json
+# nest-cli.json
 
 # Database
 database/scripts/
