@@ -3,17 +3,20 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { Track } from '../types';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Track } from '../entities/track.entity';
 import { CreateTrackDto } from '../dto/create-track.dto';
 import { UpdateTrackDto } from '../dto/update-track.dto';
-import { randomUUID } from 'crypto';
 import { CleanupService } from '../shared/cleanup.service';
 
 @Injectable()
 export class TrackService {
-  private tracks: Track[] = [];
-
-  constructor(private readonly cleanupService: CleanupService) {
+  constructor(
+    @InjectRepository(Track)
+    private trackRepository: Repository<Track>,
+    private readonly cleanupService: CleanupService,
+  ) {
     this.cleanupService.registerCleanupCallback('artist', (id: string) =>
       this.updateTracksOnArtistDelete(id),
     );
@@ -28,16 +31,16 @@ export class TrackService {
     return uuidRegex.test(id);
   }
 
-  findAll(): Track[] {
-    return this.tracks;
+  async findAll(): Promise<Track[]> {
+    return await this.trackRepository.find();
   }
 
-  findOne(id: string): Track {
+  async findOne(id: string): Promise<Track> {
     if (!this.isValidUUID(id)) {
       throw new BadRequestException('Invalid track ID');
     }
 
-    const track = this.tracks.find((track) => track.id === id);
+    const track = await this.trackRepository.findOne({ where: { id } });
     if (!track) {
       throw new NotFoundException('Track not found');
     }
@@ -45,25 +48,23 @@ export class TrackService {
     return track;
   }
 
-  create(createTrackDto: CreateTrackDto): Track {
-    const newTrack: Track = {
-      id: randomUUID(),
+  async create(createTrackDto: CreateTrackDto): Promise<Track> {
+    const newTrack = this.trackRepository.create({
       name: createTrackDto.name,
       artistId: createTrackDto.artistId,
       albumId: createTrackDto.albumId,
       duration: createTrackDto.duration,
-    };
+    });
 
-    this.tracks.push(newTrack);
-    return newTrack;
+    return await this.trackRepository.save(newTrack);
   }
 
-  update(id: string, updateTrackDto: UpdateTrackDto): Track {
+  async update(id: string, updateTrackDto: UpdateTrackDto): Promise<Track> {
     if (!this.isValidUUID(id)) {
       throw new BadRequestException('Invalid track ID');
     }
 
-    const track = this.tracks.find((track) => track.id === id);
+    const track = await this.trackRepository.findOne({ where: { id } });
     if (!track) {
       throw new NotFoundException('Track not found');
     }
@@ -81,37 +82,27 @@ export class TrackService {
       track.duration = updateTrackDto.duration;
     }
 
-    return track;
+    return await this.trackRepository.save(track);
   }
 
-  remove(id: string): void {
+  async remove(id: string): Promise<void> {
     if (!this.isValidUUID(id)) {
       throw new BadRequestException('Invalid track ID');
     }
 
-    const index = this.tracks.findIndex((track) => track.id === id);
-    if (index === -1) {
+    const result = await this.trackRepository.delete(id);
+    if (result.affected === 0) {
       throw new NotFoundException('Track not found');
     }
-
-    this.tracks.splice(index, 1);
 
     this.cleanupService.performCleanup('track', id);
   }
 
-  updateTracksOnArtistDelete(artistId: string): void {
-    this.tracks.forEach((track) => {
-      if (track.artistId === artistId) {
-        track.artistId = null;
-      }
-    });
+  async updateTracksOnArtistDelete(artistId: string): Promise<void> {
+    await this.trackRepository.update({ artistId }, { artistId: null });
   }
 
-  updateTracksOnAlbumDelete(albumId: string): void {
-    this.tracks.forEach((track) => {
-      if (track.albumId === albumId) {
-        track.albumId = null;
-      }
-    });
+  async updateTracksOnAlbumDelete(albumId: string): Promise<void> {
+    await this.trackRepository.update({ albumId }, { albumId: null });
   }
 }
