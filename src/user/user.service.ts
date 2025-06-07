@@ -10,6 +10,14 @@ import { User } from '../entities/user.entity';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdatePasswordDto } from '../dto/update-password.dto';
 
+export interface UserResponse {
+  id: string;
+  login: string;
+  version: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
 @Injectable()
 export class UserService {
   constructor(
@@ -17,10 +25,14 @@ export class UserService {
     private userRepository: Repository<User>,
   ) {}
 
-  private excludePassword(user: User): Omit<User, 'password'> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password: _, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+  private transformUser(user: User): UserResponse {
+    return {
+      id: user.id,
+      login: user.login,
+      version: user.version,
+      createdAt: user.createdAt.getTime(),
+      updatedAt: user.updatedAt.getTime(),
+    };
   }
 
   private isValidUUID(id: string): boolean {
@@ -29,12 +41,12 @@ export class UserService {
     return uuidRegex.test(id);
   }
 
-  async findAll(): Promise<Omit<User, 'password'>[]> {
+  async findAll(): Promise<UserResponse[]> {
     const users = await this.userRepository.find();
-    return users.map((user) => this.excludePassword(user));
+    return users.map((user) => this.transformUser(user));
   }
 
-  async findOne(id: string): Promise<Omit<User, 'password'>> {
+  async findOne(id: string): Promise<UserResponse> {
     if (!this.isValidUUID(id)) {
       throw new BadRequestException('Invalid user ID');
     }
@@ -44,10 +56,10 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
 
-    return this.excludePassword(user);
+    return this.transformUser(user);
   }
 
-  async create(createUserDto: CreateUserDto): Promise<Omit<User, 'password'>> {
+  async create(createUserDto: CreateUserDto): Promise<UserResponse> {
     const newUser = this.userRepository.create({
       login: createUserDto.login,
       password: createUserDto.password,
@@ -55,13 +67,13 @@ export class UserService {
     });
 
     const savedUser = await this.userRepository.save(newUser);
-    return this.excludePassword(savedUser);
+    return this.transformUser(savedUser);
   }
 
   async updatePassword(
     id: string,
     updatePasswordDto: UpdatePasswordDto,
-  ): Promise<Omit<User, 'password'>> {
+  ): Promise<UserResponse> {
     if (!this.isValidUUID(id)) {
       throw new BadRequestException('Invalid user ID');
     }
@@ -79,7 +91,7 @@ export class UserService {
     user.version += 1;
 
     const updatedUser = await this.userRepository.save(user);
-    return this.excludePassword(updatedUser);
+    return this.transformUser(updatedUser);
   }
 
   async remove(id: string): Promise<void> {
