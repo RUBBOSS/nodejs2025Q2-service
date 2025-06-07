@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToMany, JoinTable } from 'typeorm';
 import { Artist } from './artist.entity';
 import { Album } from './album.entity';
 import { Track } from './track.entity';
@@ -12,7 +12,7 @@ export class Favorites {
   @JoinTable({
     name: 'favorite_artists',
     joinColumn: { name: 'favoritesId', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'artistId', referencedColumnName: 'id' }
+    inverseJoinColumn: { name: 'artistId', referencedColumnName: 'id' },
   })
   artists: Artist[];
 
@@ -20,7 +20,7 @@ export class Favorites {
   @JoinTable({
     name: 'favorite_albums',
     joinColumn: { name: 'favoritesId', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'albumId', referencedColumnName: 'id' }
+    inverseJoinColumn: { name: 'albumId', referencedColumnName: 'id' },
   })
   albums: Album[];
 
@@ -28,7 +28,7 @@ export class Favorites {
   @JoinTable({
     name: 'favorite_tracks',
     joinColumn: { name: 'favoritesId', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'trackId', referencedColumnName: 'id' }
+    inverseJoinColumn: { name: 'trackId', referencedColumnName: 'id' },
   })
   tracks: Track[];
 }
