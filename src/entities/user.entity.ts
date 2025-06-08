@@ -32,14 +32,17 @@ export class User {
 
   @UpdateDateColumn()
   @Expose()
-  @Transform(({ value }) => {
-    if (value instanceof Date) {
-      return value.getTime();
-    }
-    if (typeof value === 'string') {
-      return new Date(value).getTime();
-    }
-    return value;
-  }, { toPlainOnly: true })
+  @Transform(
+    ({ value }) => {
+      if (value instanceof Date) {
+        return value.getTime();
+      }
+      if (typeof value === 'string') {
+        return new Date(value).getTime();
+      }
+      return value;
+    },
+    { toPlainOnly: true },
+  )
   updatedAt: Date;
 }
