@@ -38,11 +38,13 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-home_library}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rub54321}
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-rub54321}@postgres:5432/${POSTGRES_DB:-home_library}
-      # Additional application configurations
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-rub54321}@postgres:5432/${POSTGRES_DB:-home_library}      # Additional application configurations
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-3600}
       BCRYPT_SALT_ROUNDS: ${BCRYPT_SALT_ROUNDS:-10}
+      # Logging configuration
+      LOG_LEVEL: ${LOG_LEVEL:-log}
+      LOG_MAX_FILE_SIZE_KB: ${LOG_MAX_FILE_SIZE_KB:-1024}
     ports:
       - "${PORT:-4000}:4000"
     depends_on:
