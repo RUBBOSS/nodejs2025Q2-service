@@ -1,8 +1,8 @@
 FROM postgres:16-alpine
 
-ENV POSTGRES_DB=nodejs2025q2
+ENV POSTGRES_DB=home_library
 ENV POSTGRES_USER=postgres
-ENV POSTGRES_PASSWORD=postgres
+ENV POSTGRES_PASSWORD=rub54321
 ENV PGDATA=/var/lib/postgresql/data/pgdata
 
 RUN apk add --no-cache \
