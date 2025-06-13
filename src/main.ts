@@ -3,13 +3,25 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { config } from 'dotenv';
+import { LoggingService } from './shared/logging.service';
+import { AllExceptionsFilter } from './shared/all-exceptions.filter';
+import { LoggingInterceptor } from './shared/logging.interceptor';
 
 config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable validation and transformation globally
+  const loggingService = app.get(LoggingService);
+
+  setupGlobalExceptionHandlers(loggingService);
+
+  const allExceptionsFilter = app.get(AllExceptionsFilter);
+  app.useGlobalFilters(allExceptionsFilter);
+
+  const loggingInterceptor = app.get(LoggingInterceptor);
+  app.useGlobalInterceptors(loggingInterceptor);
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -29,9 +41,48 @@ async function bootstrap() {
 
   const port = process.env.PORT || 4000;
   await app.listen(port);
-  console.log(`Application is running on: http://localhost:${port}`);
-  console.log(
-    `OpenAPI documentation available at: http://localhost:${port}/doc`,
+
+  loggingService.log(
+    `Application is running on: http://localhost:${port}`,
+    'Bootstrap',
   );
+  loggingService.log(
+    `OpenAPI documentation available at: http://localhost:${port}/doc`,
+    'Bootstrap',
+  );
+}
+
+function setupGlobalExceptionHandlers(loggingService: LoggingService) {
+  process.on('uncaughtException', (error: Error) => {
+    loggingService.error(
+      `Uncaught Exception: ${error.message}`,
+      error.stack,
+      'UncaughtException',
+    );
+
+    setTimeout(() => {
+      process.exit(1);
+    }, 1000);
+  });
+
+  process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
+    const errorMessage =
+      reason instanceof Error ? reason.message : String(reason);
+    const errorStack = reason instanceof Error ? reason.stack : undefined;
+
+    loggingService.error(
+      `Unhandled Rejection at: ${promise}, reason: ${errorMessage}`,
+      errorStack,
+      'UnhandledRejection',
+    );
+  });
+
+  process.on('SIGTERM', () => {
+    loggingService.log('SIGTERM received, shutting down gracefully', 'Process');
+  });
+
+  process.on('SIGINT', () => {
+    loggingService.log('SIGINT received, shutting down gracefully', 'Process');
+  });
 }
 bootstrap();
