@@ -1,4 +1,11 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  HttpCode,
+  HttpStatus,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { AuthService, TokenResponse } from './auth.service';
 import { AuthSignupDto } from '../dto/auth-signup.dto';
@@ -17,7 +24,9 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Invalid input data' })
   @ApiResponse({ status: 403, description: 'User already exists' })
   @ApiBody({ type: AuthSignupDto })
-  async signup(@Body() signupDto: AuthSignupDto): Promise<{ message: string }> {
+  async signup(
+    @Body() signupDto: AuthSignupDto,
+  ): Promise<{ id: string; message: string }> {
     return this.authService.signup(signupDto);
   }
 
@@ -46,6 +55,9 @@ export class AuthController {
   async refresh(
     @Body() refreshTokenDto: RefreshTokenDto,
   ): Promise<TokenResponse> {
+    if (!refreshTokenDto.refreshToken) {
+      throw new UnauthorizedException('Refresh token must be provided');
+    }
     return this.authService.refresh(refreshTokenDto.refreshToken);
   }
 }

@@ -27,7 +27,9 @@ export class AuthService {
     private loggingService: LoggingService,
   ) {}
 
-  async signup(signupDto: AuthSignupDto): Promise<{ message: string }> {
+  async signup(
+    signupDto: AuthSignupDto,
+  ): Promise<{ id: string; message: string }> {
     const { login, password } = signupDto;
 
     // Validate input
@@ -62,17 +64,16 @@ export class AuthService {
       version: 1,
     });
 
-    await this.userRepository.save(user);
+    const savedUser = await this.userRepository.save(user);
 
     this.loggingService.log(`User created with login: ${login}`, 'AuthService');
 
-    return { message: 'User created successfully' };
+    return { id: savedUser.id, message: 'User created successfully' };
   }
 
   async login(loginDto: AuthLoginDto): Promise<TokenResponse> {
     const { login, password } = loginDto;
 
-    // Validate input
     if (
       !login ||
       !password ||
@@ -84,7 +85,6 @@ export class AuthService {
       );
     }
 
-    // Find user
     const user = await this.userRepository.findOne({
       where: { login },
     });
@@ -93,7 +93,6 @@ export class AuthService {
       throw new ForbiddenException('Authentication failed');
     }
 
-    // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       throw new ForbiddenException('Authentication failed');
@@ -101,7 +100,6 @@ export class AuthService {
 
     this.loggingService.log(`User logged in: ${login}`, 'AuthService');
 
-    // Generate tokens
     return this.generateTokens(user);
   }
 

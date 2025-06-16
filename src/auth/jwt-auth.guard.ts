@@ -16,16 +16,15 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     const request = context.switchToHttp().getRequest();
     const path = request.url;
 
-    // Allow access to public endpoints
     const publicPaths = [
       '/auth/signup',
       '/auth/login',
       '/auth/refresh',
       '/doc',
+      '/health',
       '/',
     ];
 
-    // Check if the path starts with any of the public paths
     const isPublicPath = publicPaths.some((publicPath) => {
       if (publicPath === '/') {
         return path === '/';

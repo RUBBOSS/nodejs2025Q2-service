@@ -7,7 +7,11 @@ import { LoggingService } from './shared/logging.service';
 import { AllExceptionsFilter } from './shared/all-exceptions.filter';
 import { LoggingInterceptor } from './shared/logging.interceptor';
 
-config();
+if (process.env.NODE_ENV !== 'production') {
+  config({ path: '.env.local' });
+} else {
+  config();
+}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

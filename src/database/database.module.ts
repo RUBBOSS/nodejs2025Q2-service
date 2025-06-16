@@ -17,9 +17,12 @@ import { User, Artist, Album, Track, Favorites } from '../entities';
         entities: [User, Artist, Album, Track, Favorites],
         migrations: ['dist/migrations/*.js'],
         migrationsTableName: 'migrations',
-        migrationsRun: process.env.NODE_ENV !== 'production', // Auto-run migrations in dev/test
-        synchronize: process.env.NODE_ENV === 'development', // Only sync in development as fallback
+        migrationsRun: process.env.NODE_ENV !== 'production',
+        synchronize: process.env.NODE_ENV === 'development',
         logging: ['query', 'error'],
+        retryAttempts: 3,
+        retryDelay: 3000,
+        autoLoadEntities: true,
       }),
       inject: [ConfigService],
     }),
