@@ -33,6 +33,17 @@ docker-compose down -v
 
 The application will be available at http://localhost:4000
 
+### Docker Image Information
+
+- **Application Image Size**: ~263MB (optimized multi-stage build)
+- **Database**: PostgreSQL 16 Alpine
+- **Features**:
+  - Hot reloading in development
+  - Health checks for both services
+  - Persistent volumes for data storage
+  - Custom bridge network for service communication
+  - Auto-restart on container failure
+
 ## Running application locally (Development)
 
 For local development without Docker:
@@ -41,10 +52,11 @@ For local development without Docker:
 # Install dependencies
 npm install
 
-# Copy local environment file
-cp .env.local .env
-
 # Start PostgreSQL locally (required)
+# Option 1: Use Docker for database only
+docker-compose up postgres -d
+
+# Option 2: Use local PostgreSQL installation
 # Make sure PostgreSQL is running on localhost:5432
 
 # Run database migrations
@@ -81,8 +93,21 @@ For more information about OpenAPI/Swagger, visit https://swagger.io/.
 
 ## Testing
 
+### Prerequisites for E2E Tests
+The e2e tests require:
+1. The application running on http://localhost:4000
+2. PostgreSQL database running (via Docker or locally)
+3. Clean database state before running tests
+
+### Running Tests
+
 ```bash
-# Run all tests
+# Start the application and database first
+npm run start:dev
+# or use Docker:
+docker-compose up postgres -d
+
+# Run all e2e tests
 npm run test
 
 # Run tests with authentication
@@ -98,43 +123,36 @@ npm run test:watch
 npm run test:cov
 ```
 
-## Security Scanning
+### Database Cleanup for Tests
+If tests fail due to duplicate key constraints, clean the test database:
+
+```bash
+# Clean database tables (Docker)
+docker exec -it home-library-db psql -U postgres -d home_library -c "TRUNCATE TABLE users, artists, albums, tracks, favorites CASCADE;"
+
+# Then re-run tests
+npm run test
+```
+
+## Additional Commands
+
+### Security Scanning
 
 ```bash
 # Run npm audit for security vulnerabilities
 npm run audit
-```
 
-## Docker Image Information
-
-- **Application Image Size**: ~263MB (optimized multi-stage build)
-- **Database**: PostgreSQL 16 Alpine
-- **Features**:
-  - Hot reloading in development
-  - Health checks for both services
-  - Persistent volumes for data storage
-  - Custom bridge network for service communication
-  - Auto-restart on container failure
-
-To run all test with authorization
-
-```
-npm run test:auth
-```
-
-To run only specific test suite with authorization
-
-```
-npm run test:auth -- <path to suite>
+# Run comprehensive security scan
+npm run security:full
 ```
 
 ### Auto-fix and format
 
-```
+```bash
 npm run lint
 ```
 
-```
+```bash
 npm run format
 ```
 
